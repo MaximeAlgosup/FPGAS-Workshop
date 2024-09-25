@@ -1,0 +1,3 @@
+set_io i_Clock  15
+
+set_io o_LED_1  56

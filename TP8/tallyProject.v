@@ -21,12 +21,15 @@ module tallyProject
     );
 
     localparam DEBOUNCE_LIMIT = 25000;
+    localparam COUNT_LIMIT = 2500000;
+    
+    reg [7:0] r_Score = 8'b00000000;
+    reg [24:0] r_Count = 25'd0;
 
     wire w_Switch_1, w_Switch_2, w_Switch_3;
     wire w_S1_A, w_S1_B, w_S1_C, w_S1_D, w_S1_E, w_S1_F, w_S1_G;
     wire w_S2_A, w_S2_B, w_S2_C, w_S2_D, w_S2_E, w_S2_F, w_S2_G;
     wire [7:0] w_Score;
-    reg [7:0] r_Score = 8'b00000000;
 
     Debounce_Filter #(.DEBOUNCE_LIMIT(DEBOUNCE_LIMIT)) Debounce_i_Switch_1
     (.i_Clk(i_Clk), 
@@ -45,7 +48,7 @@ module tallyProject
 
     Binary_To_7Segment Binary_To_7Segment_i_Score1(
         .i_Clk(i_Clk),
-        .i_Binary_Num(w_Score[3:0]),
+        .i_Binary_Num(w_Score[7:4]),
         .o_Segment_A(w_S1_A),
         .o_Segment_B(w_S1_B),
         .o_Segment_C(w_S1_C),
@@ -57,7 +60,7 @@ module tallyProject
     
     Binary_To_7Segment Binary_To_7Segment_i_Score2(
         .i_Clk(i_Clk),
-        .i_Binary_Num(w_Score[7:4]),
+        .i_Binary_Num(w_Score[3:0]),
         .o_Segment_A(w_S2_A),
         .o_Segment_B(w_S2_B),
         .o_Segment_C(w_S2_C),
@@ -69,12 +72,18 @@ module tallyProject
 
     always @(posedge i_Clk)
     begin
-        if (w_Switch_1)
+        if (w_Switch_1 && r_Count == COUNT_LIMIT)
             r_Score <= r_Score + 1'b1;
-        else if (w_Switch_2)
+        else if (w_Switch_2 && r_Count == COUNT_LIMIT)
             r_Score <= r_Score - 1'b1;
-        else if (w_Switch_3)
+        else if (w_Switch_3 && r_Count == COUNT_LIMIT)
             r_Score <= 0;
+
+        if (r_Count == COUNT_LIMIT)
+            r_Count <= 0;
+        else
+            r_Count <= r_Count + 1;
+        
     end
 
     assign w_Score = r_Score;

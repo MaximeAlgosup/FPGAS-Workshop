@@ -21,10 +21,9 @@ module tallyProject
     );
 
     localparam DEBOUNCE_LIMIT = 25000;
-    localparam COUNT_LIMIT = 2500000;
     
     reg [7:0] r_Score = 8'b00000000;
-    reg [24:0] r_Count = 25'd0;
+    reg pressed = 1'b0;
 
     wire w_Switch_1, w_Switch_2, w_Switch_3;
     wire w_S1_A, w_S1_B, w_S1_C, w_S1_D, w_S1_E, w_S1_F, w_S1_G;
@@ -72,17 +71,23 @@ module tallyProject
 
     always @(posedge i_Clk)
     begin
-        if (w_Switch_1 && r_Count == COUNT_LIMIT)
+        if (w_Switch_1 && ~pressed && r_Score < 8'b11111111)
+        begin
             r_Score <= r_Score + 1'b1;
-        else if (w_Switch_2 && r_Count == COUNT_LIMIT)
+            pressed <= 1;
+        end
+        else if (w_Switch_2 && r_Score > 0 && ~pressed)
+        begin
             r_Score <= r_Score - 1'b1;
-        else if (w_Switch_3 && r_Count == COUNT_LIMIT)
+            pressed <= 1;
+        end
+        else if (w_Switch_3 && ~pressed)
+        begin
             r_Score <= 0;
-
-        if (r_Count == COUNT_LIMIT)
-            r_Count <= 0;
+            pressed <= 1;
+        end
         else
-            r_Count <= r_Count + 1;
+            pressed <= 0;
         
     end
 
